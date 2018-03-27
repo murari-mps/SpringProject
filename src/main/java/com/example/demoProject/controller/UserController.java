@@ -34,8 +34,8 @@ public class UserController {
 	}
 	
 	@RequestMapping(value = "/userDetail",method = RequestMethod.GET)
-	public Map<String,Object> getAllUsers(){
-		List<users> userList = userDao.getAllUsers();
+	public Map<String,Object> getAllUsers(@RequestParam("start") int start,int end){
+		List<users> userList = userDao.getAllUsers(start,end);
 		if(userList.size()>0) {
 			return ResponseEntity.generateResponse(HttpStatus.ACCEPTED, false, "Success", userList);
 		}else {
@@ -51,6 +51,15 @@ public class UserController {
 			return ResponseEntity.generateResponse(HttpStatus.ACCEPTED, false, "User Deleted", isDeleted);
 		}else {
 			return ResponseEntity.generateResponse(HttpStatus.BAD_REQUEST, true, "not Deleted", null);
+		}
+	}
+	@RequestMapping(value = "/update",method = RequestMethod.PUT)
+	public Map<String,Object> updateUser(@RequestParam("userId") Long userId){
+		users user = userDao.updateUser(userId);
+		if(user !=null) {
+			return ResponseEntity.generateResponse(HttpStatus.ACCEPTED, false, "User updated", user.getUserName());
+		}else {
+			return ResponseEntity.generateResponse(HttpStatus.BAD_REQUEST, true, "not updated", null);
 		}
 	}
 	

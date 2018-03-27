@@ -2,8 +2,10 @@ package com.example.demoProject.dao;
 
 import java.util.List;
 
+import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -20,6 +22,7 @@ public class UsersDao {
 	
 	public String saveUsersDetail(users userDet) {
 		Long i = (Long) getSession().save(userDet);
+		getSession().close();
 		if(i>0) {
 			return "Success";
 		}
@@ -28,19 +31,41 @@ public class UsersDao {
 		}
 	}
 	
-	public List<users> getAllUsers(){
-		List<users> userList = getSession().createCriteria(users.class).list();
+	public List<users> getAllUsers(int pageNumber,int pageSize){
+		Criteria criteria = getSession().createCriteria(users.class);
+		criteria.setFirstResult((pageNumber - 1) * pageSize);
+		criteria.setMaxResults(pageSize);
+		List<users> userList = criteria.list();
+		getSession().close();
 		return userList;
 	}
 	
 	public boolean deleteUser(Long userId) {
-		users user1 = getSession().get(users.class,userId);
-		if(user1 !=null) {
-			getSession().delete(user1);
+		Session session = getSession();
+		users user = session.load(users.class,userId);
+		Transaction tx = session.beginTransaction();
+		if(user !=null) {
+			session.delete(user);
+			tx.commit();
 			return true;
 		}
 		else {
 			return false;
+		}
+	}
+	
+	public users updateUser(long userId) {
+		Session session = getSession();
+		users user = session.load(users.class,userId);
+		Transaction tx = session.beginTransaction();
+		if(user !=null) {
+			user.setUserName("AAAAAAAAAAAAAAA");
+			session.saveOrUpdate(user);
+			tx.commit();
+			return user;
+		}
+		else {
+			return null;
 		}
 	}
 }
